@@ -1,0 +1,10 @@
+small-coffee;beverage;Coffee;small;2.55;coffee;extra-milk,foamed-milk,special-roast
+medium-coffe;beverage;Coffee;medium;3.05;coffee;extra-milk,foamed-milk,special-roast
+large-coffee;beverage;Coffee;large;3.55;coffee;extra-milk,foamed-milk,special-roast
+orange-juice;beverage;Freshly squeezed orange juice;;3.95;juice;
+bacon-roll;snack;Bacon Roll;;4.53;bacon,roll;
+extra-milk;extra;Extra milk;;0.32;extra;
+foamed-milk;extra;Foamed milk;;0.51;foamed;
+special-roast;extra;Special roast coffee;;0.95;roast;
+
+
