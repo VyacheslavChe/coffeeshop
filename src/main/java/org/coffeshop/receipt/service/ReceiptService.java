@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.coffeshop.receipt.model.Client;
 import org.coffeshop.receipt.model.Offering;
 import org.coffeshop.receipt.model.OfferingType;
+import org.coffeshop.receipt.model.Receipt;
 
 public class ReceiptService {
     private final ClientService clientService;
@@ -30,11 +31,14 @@ public class ReceiptService {
         this.clientService = clientService;
     }
 
-    public String formatReceipt(Client client, List<Offering> selectedOfferings) {
+    public Receipt createReceipt(Client client, List<Offering> selectedOfferings) {
+        Receipt receipt = new Receipt();
         StringBuilder output = new StringBuilder(String.format(HEADER_FORMAT, "Item", "Count", "Price", "Sum"));
         List<BigDecimal> totals = new ArrayList<>();
 
-        clientService.updateClientProgram(client, selectedOfferings);
+        Long currentStamps = client.getStampCount();
+        Long receivedStamps = clientService.updateClientProgram(client, selectedOfferings);
+        receipt.setEarnedStamps(receivedStamps);
 
         long beverageCount = selectedOfferings.stream().filter(offering -> offering.getCategory() == OfferingType.BEVERAGE).count();
         selectedOfferings.stream()
@@ -47,7 +51,13 @@ public class ReceiptService {
 
         long snackCount = selectedOfferings.stream().filter(offering -> offering.getCategory() == OfferingType.SNACK).count();
         AtomicInteger freeSnackCount = new AtomicInteger(Math.min(clientService.getFreeSnackCount(client).intValue(), (int) snackCount));
-        clientService.useFreeSnacks(client, freeSnackCount.longValue());
+        Long usedStamps = clientService.useFreeSnacks(client, freeSnackCount.longValue());
+        if (usedStamps <= currentStamps) {
+            receipt.setEarnedStamps(receivedStamps);
+        } else {
+            receipt.setEarnedStamps(currentStamps + receivedStamps - usedStamps);
+        }
+
         selectedOfferings.stream()
                 .filter(offering -> offering.getCategory() == OfferingType.SNACK).sorted(Comparator.comparing(Offering::getPrice))
                 .collect(groupingBy(Offering::getId)).values().forEach(offerings -> {
@@ -67,7 +77,8 @@ public class ReceiptService {
 
         output.append(String.format(TOTAL_FORMAT, "Total:", totals.stream().reduce(BigDecimal.ZERO, BigDecimal::add), CURRENCY));
 
-        return output.toString();
+        receipt.setReceiptText(output.toString());
+        return receipt;
     }
 
     private LineResult generateLineForOffering(List<Offering> offerings, AtomicInteger freeOfferingCount) {
@@ -90,7 +101,7 @@ public class ReceiptService {
                     .getPrice(), CURRENCY, offeringTotalSum, CURRENCY));
             total = total.add(offeringTotalSum);
         }
-        freeOfferingCount.getAndAdd(-offerings.size());
+        freeOfferingCount.getAndAdd(-(Math.min(offerings.size(), freeOfferingCount.get())));
 
         return new LineResult(receiptLine.toString(), total);
     }

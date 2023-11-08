@@ -9,6 +9,7 @@ import java.util.Map;
 import org.coffeshop.receipt.TestUtils;
 import org.coffeshop.receipt.model.Client;
 import org.coffeshop.receipt.model.Offering;
+import org.coffeshop.receipt.model.Receipt;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,10 +34,11 @@ class ReceiptServiceTest {
 
         ReceiptService receiptService = new ReceiptService(clientService);
 
-        String result = receiptService.formatReceipt(client, offerings);
+        Receipt result = receiptService.createReceipt(client, offerings);
 
         assertNotNull(result);
         assertEquals(1, client.getStampCount());
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, result.getReceiptText());
+        assertEquals(1, result.getEarnedStamps());
     }
 }

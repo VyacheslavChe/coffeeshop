@@ -9,26 +9,29 @@ import org.coffeshop.receipt.model.OfferingType;
 public class ClientService {
     private static final int FREE_SNACK_STAMP_COUNT = 5;
 
-    public void updateClientProgram(Client client, List<Offering> currentOfferings) {
-
-
-        client.setStampCount(client.getStampCount() + currentOfferings.stream()
+    public Long updateClientProgram(Client client, List<Offering> currentOfferings) {
+        Long earnedStamps = currentOfferings.stream()
                 .filter(offering -> offering.getCategory() == OfferingType.SNACK)
-                .count());
+                .count();
+        client.setStampCount(client.getStampCount() + earnedStamps);
+
+        return earnedStamps;
     }
 
     public Long getFreeSnackCount(Client client) {
         return client.getStampCount() / (FREE_SNACK_STAMP_COUNT);
     }
 
-    public void useFreeSnacks(Client client, Long usedFreeSnacks) {
+    public Long useFreeSnacks(Client client, Long usedFreeSnacks) {
         Long freeSnackCount = getFreeSnackCount(client);
         if (usedFreeSnacks > freeSnackCount) {
             throw new RuntimeException("Logic error: unexpected free snack used");
         }
         if (freeSnackCount > 0) {
-            client.setStampCount(client.getStampCount() - usedFreeSnacks * (FREE_SNACK_STAMP_COUNT));
+            client.setStampCount(client.getStampCount() - usedFreeSnacks * FREE_SNACK_STAMP_COUNT);
         }
+
+        return usedFreeSnacks * FREE_SNACK_STAMP_COUNT;
     }
 
 }

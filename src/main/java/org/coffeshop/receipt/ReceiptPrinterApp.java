@@ -10,6 +10,7 @@ import org.coffeshop.receipt.config.ConfigurationLoader;
 import org.coffeshop.receipt.exceptions.OfferingParsingException;
 import org.coffeshop.receipt.model.Client;
 import org.coffeshop.receipt.model.Offering;
+import org.coffeshop.receipt.model.Receipt;
 import org.coffeshop.receipt.service.ClientService;
 import org.coffeshop.receipt.service.OfferingService;
 import org.coffeshop.receipt.service.ReceiptService;
@@ -19,6 +20,7 @@ import org.coffeshop.receipt.service.ReceiptService;
  * Input could be accepted in interactive mode (-i) or in batch mode from the file (-f)
  */
 public class ReceiptPrinterApp {
+
     private static final String USAGE = "Possible options: -c <current stamp count> -f <filename for order information>";
 
     public static void main(String[] args) {
@@ -35,7 +37,7 @@ public class ReceiptPrinterApp {
                     orderFileName = args[i + 1];
                     i++;
                     break;
-                case "-c":
+                case "-s":
                     if (i + 1 == args.length) {
                         displayUsage();
                         return;
@@ -55,11 +57,15 @@ public class ReceiptPrinterApp {
             }
         }
 
+        ReceiptPrinterApp app = new ReceiptPrinterApp();
+        app.processOrderData(client, orderFileName);
+    }
+
+    public void processOrderData(Client client, String orderFileName) {
         List<Offering> configuredOfferings = ConfigurationLoader.loadOfferingConfiguration("offerings.csv");
 
         Scanner userInputScanner;
         var requestedOfferings = new ArrayList<String>();
-        var currentStamps = client.getStampCount();
         if (orderFileName == null) {
             System.out.println("Enter user offering (one by one). Enter empty string for finishing");
             userInputScanner = new Scanner(System.in);
@@ -71,10 +77,11 @@ public class ReceiptPrinterApp {
                 return;
             }
         }
-        for (String userInput = userInputScanner.nextLine(); !userInput.isEmpty(); userInput = userInputScanner.nextLine()) {
+        for (String userInput = userInputScanner.nextLine(); !userInput.isEmpty() && userInputScanner.hasNextLine(); userInput =
+                userInputScanner.nextLine()) {
             requestedOfferings.add(userInput);
         }
-        if (orderFileName != null) {
+        if (orderFileName != null) { // We should not close standard input stream!
             userInputScanner.close();
         }
 
@@ -88,12 +95,13 @@ public class ReceiptPrinterApp {
             for (var offering : requestedOfferings) {
                 parsedOfferings.addAll(offeringService.parseOfferingString(offering));
             }
-            System.out.println(receiptService.formatReceipt(client, parsedOfferings));
-            System.out.println("Stamps earned: " + (client.getStampCount() - currentStamps));
+            Receipt receipt = receiptService.createReceipt(client, parsedOfferings);
+
+            System.out.println(receipt.getReceiptText());
+            System.out.println("Stamps earned: " + receipt.getEarnedStamps());
         } catch (OfferingParsingException e) {
             System.out.println(e.getMessage());
         }
-
     }
 
     private static void displayUsage() {
