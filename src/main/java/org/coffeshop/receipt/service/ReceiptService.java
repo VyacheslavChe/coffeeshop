@@ -75,7 +75,7 @@ public class ReceiptService {
                     totals.add(lineResult.total());
                 });
 
-        output.append(String.format(TOTAL_FORMAT, "Total:", totals.stream().reduce(BigDecimal.ZERO, BigDecimal::add), CURRENCY));
+        output.append(String.format(Locale.ENGLISH, TOTAL_FORMAT, "Total:", totals.stream().reduce(BigDecimal.ZERO, BigDecimal::add), CURRENCY));
 
         receipt.setReceiptText(output.toString());
         return receipt;

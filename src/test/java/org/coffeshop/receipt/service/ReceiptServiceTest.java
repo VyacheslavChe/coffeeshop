@@ -25,7 +25,7 @@ class ReceiptServiceTest {
                 + "Bacon Roll                        5      4.53 CHF     22.65 CHF\n"
                 + "Extra milk                        1      0.00 CHF      0.00 CHF\n"
                 + "\n"
-                + "Total:                                                35,65 CHF\n";
+                + "Total:                                                35.65 CHF\n";
 
         Client client = new Client(0L);
         List<Offering> offerings = TestUtils.generateOfferings(Map.of("small-coffee", 2, "orange-juice", 2, "bacon-roll", 6, "extra"
