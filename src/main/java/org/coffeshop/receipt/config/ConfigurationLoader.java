@@ -24,9 +24,9 @@ public class ConfigurationLoader {
         var configuredOfferingScanner = new Scanner(inputStream);
 
         for (String offeringString = configuredOfferingScanner.nextLine(); !offeringString.isEmpty(); offeringString = configuredOfferingScanner.nextLine()) {
-            Offering offerring = extractOfferFromLine(offeringString);
-            if (offerring != null) {
-                configuredOfferings.add(offerring);
+            Offering offering = extractOfferFromLine(offeringString);
+            if (offering != null) {
+                configuredOfferings.add(offering);
             }
         }
 

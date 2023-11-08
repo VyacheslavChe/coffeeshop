@@ -10,6 +10,8 @@ public class ClientService {
     private static final int FREE_SNACK_STAMP_COUNT = 5;
 
     public void updateClientProgram(Client client, List<Offering> currentOfferings) {
+
+
         client.setStampCount(client.getStampCount() + currentOfferings.stream()
                 .filter(offering -> offering.getCategory() == OfferingType.SNACK)
                 .count());
